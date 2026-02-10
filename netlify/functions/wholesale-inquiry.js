@@ -133,8 +133,8 @@ exports.handler = async (event) => {
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Wholesale Inquiries <wholesale@yourdomain.com>", // TODO: Use a verified Resend domain
-        to: ["you@youremail.com"], // TODO: Replace with your actual email
+        from: "Wholesale Inquiries <wholesale@wholesale.cosmopolis.com>",
+        to: ["raymondvelez89@gmail.com"],
         subject: `Wholesale Inquiry — ${data.business_name}`,
         html: htmlBody,
         reply_to: data.email,
