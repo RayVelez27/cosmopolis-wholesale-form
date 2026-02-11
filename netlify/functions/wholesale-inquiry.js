@@ -134,7 +134,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         from: "Wholesale Inquiries <wholesale@wholesale.cosmopolis.com>",
-        to: ["raymondvelez89@gmail.com"],
+        to: ["ccarrigan@cosmopolis.com"],
         subject: `Wholesale Inquiry — ${data.business_name}`,
         html: htmlBody,
         reply_to: data.email,
