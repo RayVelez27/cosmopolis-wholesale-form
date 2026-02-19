@@ -2,9 +2,10 @@
 // Netlify serverless function — receives wholesale form data & sends via Resend API
 
 exports.handler = async (event) => {
-  // ── CORS headers (allow your Shopify domain) ──
+  // ── CORS headers ──
+  // TODO: Replace * with your Shopify domain, e.g. "https://yourstore.myshopify.com"
   const headers = {
-    "Access-Control-Allow-Origin": "*", // TODO: Replace * with your Shopify domain, e.g. "https://yourstore.myshopify.com"
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
@@ -25,8 +26,19 @@ exports.handler = async (event) => {
   try {
     const data = JSON.parse(event.body);
 
-    // ── Basic server-side validation ──
-    const required = ["name", "email", "contact_method", "business_name", "business_type", "address", "city", "zip", "coffee_program", "message"];
+    // ── Server-side validation ──
+    // These match exactly what the Shopify form sends as required:
+    const required = [
+      "name",
+      "email",
+      "contact_method",
+      "business_name",
+      "business_type",
+      "address",
+      "city",
+      "zip",
+      "message",
+    ];
     const missing = required.filter((field) => !data[field] || !data[field].trim());
 
     if (missing.length > 0) {
@@ -46,21 +58,21 @@ exports.handler = async (event) => {
       };
     }
 
-    // ── Format the email body ──
+    // ── Labels for human-readable email ──
     const businessTypeLabels = {
-      coffee_shop: "Coffee Shop",
+      cafe: "Café",
       restaurant: "Restaurant",
+      grocery_store: "Grocery Store",
       office: "Office",
       other: "Other",
-      special_request: "Special Request",
     };
 
-    const programLabels = {
-      dedicated_roaster: "Dedicated Roaster",
-      multi_roaster: "Multi-Roaster",
-      rotating_roaster: "Rotating Roaster",
+    const contactMethodLabels = {
+      email: "Email",
+      phone: "Phone",
     };
 
+    // ── Format the email body ──
     const htmlBody = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; color: #1a1715;">
         <div style="background: #1a1715; padding: 28px 32px; border-radius: 8px 8px 0 0;">
@@ -83,7 +95,7 @@ exports.handler = async (event) => {
             ${data.phone ? `<tr><td style="padding: 6px 12px 6px 0; color: #7a746d; vertical-align: top;">Phone</td><td style="padding: 6px 0;">${escapeHtml(data.phone)}</td></tr>` : ""}
             <tr>
               <td style="padding: 6px 12px 6px 0; color: #7a746d; vertical-align: top;">Preferred Contact</td>
-              <td style="padding: 6px 0; text-transform: capitalize;">${escapeHtml(data.contact_method)}</td>
+              <td style="padding: 6px 0;">${contactMethodLabels[data.contact_method] || escapeHtml(data.contact_method)}</td>
             </tr>
           </table>
 
@@ -106,11 +118,7 @@ exports.handler = async (event) => {
 
           <h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: #b04d36; margin: 0 0 16px; font-weight: 600;">Details</h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px; font-size: 14px;">
-            ${data.volume ? `<tr><td style="padding: 6px 12px 6px 0; color: #7a746d; width: 160px; vertical-align: top;">Volume</td><td style="padding: 6px 0;">${escapeHtml(data.volume)}</td></tr>` : ""}
-            <tr>
-              <td style="padding: 6px 12px 6px 0; color: #7a746d; width: 160px; vertical-align: top;">Program</td>
-              <td style="padding: 6px 0;">${programLabels[data.coffee_program] || escapeHtml(data.coffee_program)}</td>
-            </tr>
+            ${data.volume ? `<tr><td style="padding: 6px 12px 6px 0; color: #7a746d; width: 160px; vertical-align: top;">Est. Volume</td><td style="padding: 6px 0;">${escapeHtml(data.volume)}</td></tr>` : ""}
           </table>
 
           <div style="background: #f8f5f0; border-radius: 6px; padding: 20px; margin-bottom: 8px;">
